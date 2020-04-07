@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
 
 
 import requests
@@ -19,13 +18,11 @@ if not sys.warnoptions:
 from sympy import symbols, Eq, solve
 
 
-# In[ ]:
 
 
 symbol = ['XBTUSD', 'BTCUSD']
 
 
-# In[ ]:
 
 
 keys = []
@@ -40,7 +37,6 @@ for x in range(len(keys)):
     connections.append(bitmex(test=False,api_key=keys[x][1][0][0],api_secret=keys[x][1][0][1]))
 
 
-# In[ ]:
 
 
 def mex_rounding(value):
@@ -48,7 +44,6 @@ def mex_rounding(value):
     return rounded_value
 
 
-# In[ ]:
 
 
 def mex_balances():
@@ -58,7 +53,6 @@ def mex_balances():
     return balances
 
 
-# In[ ]:
 
 
 total_mex_balance = 0
@@ -67,7 +61,6 @@ for x in range(len(mex_balances())):
 total_mex_balance = round(total_mex_balance, 8)
 
 
-# In[ ]:
 
 
 def mex_positions():
@@ -101,7 +94,6 @@ def mex_positions():
     return postions
 
 
-# In[ ]:
 
 
 for x in range(len(mex_positions())):
@@ -110,17 +102,24 @@ for x in range(len(mex_positions())):
     print('\n')
 
 
-# In[ ]:
 
 
 custom_input = input('Add Custom Data? y/n'+'\n'+'>')
 if custom_input == 'y':
-    custom = {}
-    custom['Exchange'] = input('Exchange: ')
-    custom['Account'] = input('Account: ')
-    custom['Side'] = input('Side: ')
-    custom['Size'] = int(input('Size: '))
-    custom['ExecPrice'] = float(input('ExecPrice: '))
+    import_file = input('Import Data From custom_data.txt? y/n'+'\n'+'>')
+    if import_file == 'n':
+        custom = {}
+        custom['Exchange'] = input('Exchange: ')
+        custom['Account'] = input('Account: ')
+        custom['Side'] = input('Side: ')
+        custom['Size'] = int(input('Size: '))
+        custom['ExecPrice'] = float(input('ExecPrice: '))
+    else:
+        import ast
+        with open('custom_data.txt', 'r') as inf:
+            custom = ast.literal_eval(inf.read())
+        custom['Size'] = int(custom['Size'])
+        custom['ExecPrice'] = float(custom['ExecPrice'])
     custom['OpenValue'] = mex_rounding(custom['Size']*((1/custom['ExecPrice'])-(1/custom['ExecPrice'])*0.00075))
     custom['MarketPrice'] = mex_positions()[0]['MarketPrice']
     custom['MarketValue'] = mex_rounding(custom['Size']*((1/custom['MarketPrice'])-(1/custom['MarketPrice'])*0.00075))
@@ -135,7 +134,6 @@ if custom_input == 'y':
     print('\n')
 
 
-# In[ ]:
 
 
 net_longs = []
@@ -147,7 +145,6 @@ for x in range(len(mex_positions())):
         net_shorts.append([mex_positions()[x]['Size'], mex_positions()[x]['ExecPrice'], mex_positions()[x]['UnrealisedPnL']])
 
 
-# In[ ]:
 
 
 if custom['Side'] == 'Long':
@@ -156,7 +153,6 @@ else:
     net_shorts.append([custom['Size'], custom['ExecPrice'], custom['UnrealisedPnL']])
 
 
-# In[ ]:
 
 
 keys = []
@@ -170,7 +166,6 @@ for x in range(len(keys)):
     connections.append(bybit(test=False,api_key=keys[x][1][0][0],api_secret=keys[x][1][0][1]))
 
 
-# In[ ]:
 
 
 def bybit_rounding(value):
@@ -178,7 +173,6 @@ def bybit_rounding(value):
     return rounded_value
 
 
-# In[ ]:
 
 
 def bybit_balances():
@@ -188,7 +182,6 @@ def bybit_balances():
     return balances
 
 
-# In[ ]:
 
 
 def bybit_positions():
@@ -217,7 +210,6 @@ def bybit_positions():
     return positions
 
 
-# In[ ]:
 
 
 for x in range(len(bybit_positions())):
@@ -226,7 +218,6 @@ for x in range(len(bybit_positions())):
     print('\n')
 
 
-# In[ ]:
 
 
 total_bybit_balance = 0
@@ -235,7 +226,6 @@ for x in range(len(bybit_balances())):
 total_bybit_balance = round(total_bybit_balance, 8)
 
 
-# In[ ]:
 
 
 for x in range(len(bybit_positions())):
@@ -245,7 +235,6 @@ for x in range(len(bybit_positions())):
         net_shorts.append([bybit_positions()[x]['Size'], bybit_positions()[x]['ExecPrice'], bybit_positions()[x]['UnrealisedPnL']])
 
 
-# In[ ]:
 
 
 total_longs = 0
@@ -363,10 +352,3 @@ elif total_longs == 0 and total_shorts > 1:
 print('\n'+'NetBias: '+netBias+'\n'+
 'NetPositionSize: '+str(net_position_size)+'\n'+
 'NetBreakEven: '+str(breakeven))
-
-
-# In[ ]:
-
-
-
-
