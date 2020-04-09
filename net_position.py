@@ -28,10 +28,11 @@ symbol = ['XBTUSD', 'BTCUSD']
 keys = []
 #add API Keys and Secrets for as many accounts as you need in the format shown below.
 #Replace 'Manual', '1hr', etc. with whatever account name you want
-keys.append(['Manual', [('XXX', 'XXX')]])
-keys.append(['1hr', [('XXX', 'XXX')]])
-keys.append(['2hr', [('XXX', 'XXX')]])
-keys.append(['4hr', [('XXX', 'XXX')]])       
+#Replace <YOUR_STARTING_BALANCE> w/ starting account balance
+keys.append(['Manual', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
+keys.append(['1hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
+keys.append(['2hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
+keys.append(['4hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])       
 connections = []
 for x in range(len(keys)):
     connections.append(bitmex(test=False,api_key=keys[x][1][0][0],api_secret=keys[x][1][0][1]))
@@ -49,16 +50,20 @@ def mex_rounding(value):
 def mex_balances():
     balances = []
     for x in range(len(connections)):
-        balances.append((keys[x][0], connections[x].User.User_getWalletHistory().result()[0][0]['walletBalance']/100000000))
+        balances.append((keys[x][2], connections[x].User.User_getWalletHistory().result()[0][0]['walletBalance']/100000000))
     return balances
 
 
 
 
 total_mex_balance = 0
+mex_starting_balance = 0
 for x in range(len(mex_balances())):
     total_mex_balance+=mex_balances()[x][1]
-total_mex_balance = round(total_mex_balance, 8)
+    mex_starting_balance+=mex_balances()[x][0]
+total_mex_balance = mex_rounding(total_mex_balance)
+mex_starting_balance = mex_rounding(mex_starting_balance)
+mex_net_gains = mex_rounding(total_mex_balance-mex_starting_balance)
 
 
 
@@ -100,6 +105,10 @@ for x in range(len(mex_positions())):
     for k, v in mex_positions()[x].items():
         print(k, ':', v)
     print('\n')
+print('Bitmex Starting Balance : '+str(mex_starting_balance))
+print('Bitmex Current Balance : '+str(total_mex_balance))
+print('Bitmex Net Gains : '+str(mex_net_gains))
+print('\n')
 
 
 
@@ -147,10 +156,11 @@ for x in range(len(mex_positions())):
 
 
 
-if custom['Side'] == 'Long':
-    net_longs.append([custom['Size'], custom['ExecPrice'], custom['UnrealisedPnL']])
-else:
-    net_shorts.append([custom['Size'], custom['ExecPrice'], custom['UnrealisedPnL']])
+if custom_input == 'y':
+    if custom['Side'] == 'Long':
+        net_longs.append([custom['Size'], custom['ExecPrice'], custom['UnrealisedPnL']])
+    else:
+        net_shorts.append([custom['Size'], custom['ExecPrice'], custom['UnrealisedPnL']])
 
 
 
@@ -158,9 +168,10 @@ else:
 keys = []
 #add API Keys and Secrets for as many accounts as you need in the format shown below.
 #Replace '1hr', '2hr', etc. with whatever account name you want
-keys.append(['1hr', [('XXX', 'XXX')]])
-keys.append(['2hr', [('XXX', 'XXX')]])
-keys.append(['4hr', [('XXX', 'XXX')]])
+#Replace <YOUR_STARTING_BALANCE> w/ starting account balance
+keys.append(['1hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
+keys.append(['2hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
+keys.append(['4hr', [('XXX', 'XXX')], <YOUR_STARTING_BALANCE>])
 connections = []
 for x in range(len(keys)):
     connections.append(bybit(test=False,api_key=keys[x][1][0][0],api_secret=keys[x][1][0][1]))
@@ -178,7 +189,7 @@ def bybit_rounding(value):
 def bybit_balances():
     balances = []
     for x in range(len(connections)):
-        balances.append((keys[x][0], bybit_rounding(connections[x].Wallet.Wallet_getBalance(coin='BTC').result()[0]['result']['BTC']['available_balance'])))
+        balances.append((keys[x][2], bybit_rounding(connections[x].Wallet.Wallet_getBalance(coin='BTC').result()[0]['result']['BTC']['wallet_balance'])))
     return balances
 
 
@@ -212,18 +223,26 @@ def bybit_positions():
 
 
 
+total_bybit_balance = 0
+bybit_starting_balance = 0
+for x in range(len(bybit_balances())):
+    total_bybit_balance+=bybit_balances()[x][1]
+    bybit_starting_balance+=bybit_balances()[x][0]
+total_bybit_balance = mex_rounding(total_bybit_balance)
+bybit_starting_balance = mex_rounding(bybit_starting_balance)
+bybit_net_gains = mex_rounding(total_bybit_balance-bybit_starting_balance)
+
+
+
+
 for x in range(len(bybit_positions())):
     for k, v in bybit_positions()[x].items():
         print(k, ':', v)
     print('\n')
-
-
-
-
-total_bybit_balance = 0
-for x in range(len(bybit_balances())):
-    total_bybit_balance+=bybit_balances()[x][1]
-total_bybit_balance = round(total_bybit_balance, 8)
+print('Bybit Starting Balance : '+str(bybit_starting_balance))
+print('Bybit Current Balance : '+str(total_bybit_balance))
+print('Bybit Net Gains : '+str(bybit_net_gains))
+print('\n')
 
 
 
